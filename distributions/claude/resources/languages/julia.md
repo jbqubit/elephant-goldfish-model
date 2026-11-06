@@ -90,7 +90,12 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     names the package that owns the function.
 *   **Methods added to other modules' functions** (for example
     `Base.show(io::IO, x::T)` or `Base.getindex`) are part of the contract.
-    List them by function and argument types. Adding methods to another
+    List them by function and argument types. This includes methods added to
+    another module's internal functions, such as
+    `Base.replace_in_print_matrix`; mark those as extending an internal API,
+    because the owning module can change it without notice. Text search
+    cannot tell whether such a function is public; [Reflection](#reflection)
+    can. Adding methods to another
     module's function for another module's types is type piracy; report it.
 *   **Abstract types** often define informal interfaces (subtypes must
     implement certain functions). Record such a rule as an invariant only when
@@ -162,13 +167,16 @@ Base.visit(Core.methodtable) do m  # Julia 1.12 and later
     f = Base.unwrap_unionall(m.sig).parameters[1]
     f isa Type && f !== typeof(Core.kwcall) && !(f <: Type) || return
     startswith(string(m.name), "#") && return
-    parentmodule(f) === M || println(parentmodule(f), ".", m.name, "\t", m.file, ":", m.line)
+    o = parentmodule(f)
+    o === M || println(o, ".", m.name, "\t", Base.ispublic(o, m.name) ? "public" : "internal",
+                       "\t", m.file, ":", m.line)
 end
 ```
 
 The first part prints each public name with its status, owner, and the
 number of methods this package defines for it. The second part prints each
-method the package adds to another module's function. It relies on
+method the package adds to another module's function, and whether that
+function is public or internal in its own module. It relies on
 `Base.visit`, an internal API of Julia 1.12; skip it on older versions.
 
 ## Skill Notes
@@ -234,5 +242,7 @@ the code, search for every method of the function involved as described in
 *   For the Incomplete Models check, compare documented fields with each
     `struct` definition.
 *   Report documented exports that the module no longer exports or defines.
+*   Report methods added to other modules' functions, internal ones
+    included, that the documentation omits.
 *   If the user approves [Reflection](#reflection), use it to confirm exports
     and the methods added to other modules' functions.
