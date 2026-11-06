@@ -35,7 +35,7 @@ this profile and a skill disagree about Julia specifics, follow this profile.
 *   Tests live in `test/` (singular). `test/runtests.jl` is the entry point and
     `include`s the other test files; `@testset` blocks group the tests.
 *   Test-only dependencies are listed under `[extras]` and `[targets]` in the
-    project file, or in `test/Project.toml`.
+    project file, in `test/Project.toml`, or in both; read both.
 *   Command, run from the folder of the nearest project file:
     `julia --project=. -e 'using Pkg; Pkg.test()'`. Coverage:
     `Pkg.test(coverage=true)`.
@@ -43,6 +43,17 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     writes a `Manifest.toml` into a project that lacks one.
 *   Treat `test/` as a test-only directory, like `tests/` in other languages.
     This rule applies to Julia projects only.
+
+## Dependencies
+
+*   The project file lists direct dependencies under `[deps]`, optional ones
+    under `[weakdeps]` (loaded through `[extensions]`), and test-only ones as
+    described in [Tests](#tests). Reading these needs no Julia.
+*   The full resolved list, including indirect dependencies, comes from
+    `Pkg.status(mode = Pkg.PKGMODE_MANIFEST)` or `Pkg.dependencies()` run in a
+    temporary environment (see [Reflection](#reflection)). Resolving the
+    project's own environment writes a `Manifest.toml`. The resolved list
+    contains neither optional nor test-only dependencies.
 
 ## Definitions and Search
 
@@ -54,6 +65,12 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     starting with `f(` that contain ` = `, and for qualified definitions such
     as `function Base.f(` and `Base.f(`. Check every method's argument types
     before saying a method exists or is missing.
+*   **Counting methods**: text search finds where methods are defined, not
+    how many exist. A definition with optional positional arguments, such as
+    `f(x, tol=1e-8)`, creates one method per number of arguments; keyword
+    arguments add a hidden entry point; and every `struct` gets default
+    constructors. Do not state a method count from text search alone; read
+    the signatures, or use [Reflection](#reflection).
 *   **Imports**: `using M`, `using M: a, b`, `import M: f` (needed to add
     methods to `f` without qualifying it), and `include("path.jl")`, which
     pastes a file into the current module.
@@ -67,6 +84,10 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     `public` inside the module that owns them, usually in `src/<Name>.jl`.
     Before calling a name in an `include`d file public, check the owning
     module's `export` and `public` lines.
+*   **Re-exports**: a module can export a function it imported from a
+    dependency, such as `CommonSolve.solve`. The name is part of the
+    interface, but the contract lists only the methods this package adds and
+    names the package that owns the function.
 *   **Methods added to other modules' functions** (for example
     `Base.show(io::IO, x::T)` or `Base.getindex`) are part of the contract.
     List them by function and argument types. Adding methods to another
@@ -114,6 +135,42 @@ Name a third-party tool (for example Aqua.jl, JET.jl, BenchmarkTools.jl, or
 Documenter.jl) only when the project already depends on it, as shown by its
 project file, `test/Project.toml`, or `docs/Project.toml`.
 
+## Reflection
+
+Loading the package gives exact public names, owners, and methods. Ask the
+user first: it runs the package's code, can download its dependencies, and
+writes to the shared package store under `~/.julia`. It does not change the
+repository. Replace `<path>` with the package folder and `<Name>` with the
+package name, then run this with `julia --startup-file=no`:
+
+```julia
+using Pkg
+Pkg.activate(; temp = true)
+Pkg.develop(path = "<path>")
+using <Name>
+M = <Name>
+for n in names(M)
+    n === nameof(M) && continue
+    x = getfield(M, n)
+    owner = x isa Union{Function,Type} ? parentmodule(x) : M
+    nmeth = x isa Function ? length(methods(x, M)) : 0
+    println(n, "\t", Base.isexported(M, n) ? "exported" : "public", "\t",
+            owner === M ? "own" : "re-exported from $owner", "\t", nmeth, " methods")
+end
+Base.visit(Core.methodtable) do m  # Julia 1.12 and later
+    m isa Method && m.module === M || return
+    f = Base.unwrap_unionall(m.sig).parameters[1]
+    f isa Type && f !== typeof(Core.kwcall) && !(f <: Type) || return
+    startswith(string(m.name), "#") && return
+    parentmodule(f) === M || println(parentmodule(f), ".", m.name, "\t", m.file, ":", m.line)
+end
+```
+
+The first part prints each public name with its status, owner, and the
+number of methods this package defines for it. The second part prints each
+method the package adds to another module's function. It relies on
+`Base.visit`, an internal API of Julia 1.12; skip it on older versions.
+
 ## Skill Notes
 
 ### egm-bootstrap
@@ -128,6 +185,8 @@ project file, `test/Project.toml`, or `docs/Project.toml`.
     packages that load it.
 *   Treat `docs/` and `benchmark/` as tooling, not components, unless the user
     asks to include them.
+*   If the user approves [Reflection](#reflection), use its output for the
+    Interface sections.
 
 ### egm-brainstorm
 
@@ -175,3 +234,5 @@ the code, search for every method of the function involved as described in
 *   For the Incomplete Models check, compare documented fields with each
     `struct` definition.
 *   Report documented exports that the module no longer exports or defines.
+*   If the user approves [Reflection](#reflection), use it to confirm exports
+    and the methods added to other modules' functions.
