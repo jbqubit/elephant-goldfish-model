@@ -92,6 +92,11 @@ its Preflight section must say how to:
     sit in the repository, and never change any other file.
 5.  **Read the output** before the source, trusting it in proportion to its
     provenance labels.
+6.  **Hand it to helpers.** Name the files that the preflight's Helpers step
+    passes to workers, scouts, and reviewers, since they start in a fresh
+    context and cannot see what the calling skill read. Keep the output
+    searchable by heading, and split rarely needed detail into a second file
+    (EatMe.jl writes `EatMe.jl.md` and `EatMe.jl.index.md`).
 
 ## Steps
 

@@ -23,11 +23,12 @@ this profile.
 ## Preflight
 
 [EatMe.jl](https://github.com/brittonlab/EatMe.jl) loads a Julia package and
-writes `EatMe.jl.md` beside its project file: the public interface, every
-method, the methods it adds to other packages' functions, invariants, side
-effects, tests, and an internal index, with each description labeled by its
-source. EGM relies on it as the map of each Julia package; the text rules in
-the rest of this profile are for checking it and for working without it.
+writes two files beside its project file: `EatMe.jl.md`, the map (public
+interface, methods added to other packages' functions, invariants, side
+effects, and tests), and `EatMe.jl.index.md` (internal types and every
+internal method, by file). Each description is labeled by its source. EGM
+relies on them as the map of each Julia package; the text rules in the rest
+of this profile are for checking them and for working without them.
 
 1.  **Find the packages.** Each Julia project file (see
     [Recognize](#recognize)) with both a `name` and a `uuid` is a package.
@@ -40,12 +41,15 @@ the rest of this profile are for checking it and for working without it.
 3.  **Run it.** For each package, follow `$EATME_JL/prompts/run.md`. It
     checks whether `EatMe.jl.md` is current and asks the user before loading
     the package. Do this once per package per conversation.
-4.  **Read it.** Read `EatMe.jl.md` before the package's source. Read the
-    sections before the Internal Index in full; read the Internal Index only
-    for the files you work on. Treat descriptions labeled *inferred* or
-    *unclear* as leads to check in the code, not as facts. If the file is
-    stale, say so and check its claims against the code. `EatMe.jl.md` is
-    generated output: never treat it as source, and do not edit it.
+4.  **Read it.** Search `EatMe.jl.md` by heading (`## ` for sections,
+    `` ### `name` `` for a public name) before reading the package's source,
+    and look up the files you work on in `EatMe.jl.index.md`. Treat
+    descriptions labeled *inferred* or *unclear* as leads to check in the
+    code, not as facts. If the files are stale, say so and check their claims
+    against the code. Both files are generated output: never treat them as
+    source, and do not edit them.
+5.  **For helpers.** List this profile and each package's `EatMe.jl.md` and
+    `EatMe.jl.index.md` in the preflight's Helpers step.
 
 ## Layout
 
@@ -175,17 +179,26 @@ project file, `test/Project.toml`, or `docs/Project.toml`.
 
 *   Count `.jl` as a source extension and keep Julia project files with the
     other manifests.
-*   Use the [Tests](#tests) command as `VerificationCommand`, taken from the
-    nearest project file for each package and subpackage.
-*   Read `src/<Name>.jl` first. For a folder of `include`d files, read the
-    owning module file before deciding which names are public.
-*   Document each package extension in `ext/` as a component and name the
-    packages that load it.
+*   **One contract per package.** A Julia package is one component, because
+    a folder is not a module. Leave the package's `src/` subfolders, `test/`,
+    and `ext/` out of the documentation plan, and write a single
+    `target_filename` in the package folder with the Component Package
+    template. When the repository holds several packages, the root blueprint
+    links to each package's contract.
+*   **Build it from `EatMe.jl.md`.** Overview: from its Overview. Interface:
+    each public name with a one-line description and a `[file:symbol]`
+    citation taken from its location, each package extension with the
+    packages that load it, and a link to `EatMe.jl.md` for methods and
+    signatures. Invariants and Side Effects: items labeled *doc*, *doc\**,
+    *owner*, *comment*, *test*, or *reflection*, plus *inferred* items you
+    have confirmed in the code. Verification: the [Tests](#tests) command
+    from the package's project file.
+*   Without `EatMe.jl.md`, build the same contract from the text rules: read
+    `src/<Name>.jl` first, then the files it `include`s, and decide which
+    names are public from its `export` and `public` lines. Say in the
+    contract that it was built without EatMe.
 *   Treat `docs/` and `benchmark/` as tooling, not components, unless the user
     asks to include them.
-*   Build the Interface, Invariants, and Side Effects sections of each
-    package from its `EatMe.jl.md` (see [Preflight](#preflight)). Without
-    one, use the text rules above and say so in the contract.
 
 ### egm-brainstorm
 
