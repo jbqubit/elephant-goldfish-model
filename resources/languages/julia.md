@@ -1,8 +1,10 @@
 # Julia Language Profile
 
-Read this profile when the repository contains Julia code. The shared sections
-apply to every EGM skill; the last section adds notes for each skill. Where
-this profile and a skill disagree about Julia specifics, follow this profile.
+The [preflight](../preflight.md) sends every EGM skill here when the
+repository contains Julia code. Follow [Preflight](#preflight) first. The
+shared sections apply to every skill; the last section adds notes for each
+skill. Where this profile and a skill disagree about Julia specifics, follow
+this profile.
 
 ## Recognize
 
@@ -18,13 +20,14 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     `Manifest-v*.toml`, and `Artifacts.toml`. Treat them as configuration,
     never as source or interface.
 
-## EatMe
+## Preflight
 
 [EatMe.jl](https://github.com/brittonlab/EatMe.jl) loads a Julia package and
 writes `EatMe.jl.md` beside its project file: the public interface, every
 method, the methods it adds to other packages' functions, invariants, side
 effects, tests, and an internal index, with each description labeled by its
-source. When the file exists, it is the map of the package.
+source. EGM relies on it as the map of each Julia package; the text rules in
+the rest of this profile are for checking it and for working without it.
 
 1.  **Find the packages.** Each Julia project file (see
     [Recognize](#recognize)) with both a `name` and a `uuid` is a package.
@@ -32,7 +35,8 @@ source. When the file exists, it is the map of the package.
     skip them.
 2.  **Find EatMe.** Use the folder named by the `EATME_JL` environment
     variable. If it is unset or has no `scripts/eatme`, tell the user that
-    EatMe is not available and continue without it.
+    EatMe is not available, then continue with the text rules below and say
+    in your output that the package map was built without EatMe.
 3.  **Run it.** For each package, follow `$EATME_JL/prompts/run.md`. It
     checks whether `EatMe.jl.md` is current and asks the user before loading
     the package. Do this once per package per conversation.
@@ -76,8 +80,8 @@ source. When the file exists, it is the map of the package.
     described in [Tests](#tests). Reading these needs no Julia.
 *   The full resolved list, including indirect dependencies, comes from
     `Pkg.status(mode = Pkg.PKGMODE_MANIFEST)` or `Pkg.dependencies()` run in a
-    temporary environment (see [Reflection](#reflection)). Resolving the
-    project's own environment writes a `Manifest.toml`. The resolved list
+    temporary environment; `EatMe.jl.md` lists it under Dependencies.
+    Resolving the project's own environment writes a `Manifest.toml`. The resolved list
     contains neither optional nor test-only dependencies.
 
 ## Definitions and Search
@@ -95,7 +99,7 @@ source. When the file exists, it is the map of the package.
     `f(x, tol=1e-8)`, creates one method per number of arguments; keyword
     arguments add a hidden entry point; and every `struct` gets default
     constructors. Do not state a method count from text search alone; read
-    the signatures, or use [Reflection](#reflection).
+    the signatures, or take the count from `EatMe.jl.md`.
 *   **Imports**: `using M`, `using M: a, b`, `import M: f` (needed to add
     methods to `f` without qualifying it), and `include("path.jl")`, which
     pastes a file into the current module.
@@ -119,8 +123,8 @@ source. When the file exists, it is the map of the package.
     another module's internal functions, such as
     `Base.replace_in_print_matrix`; mark those as extending an internal API,
     because the owning module can change it without notice. Text search
-    cannot tell whether such a function is public; [Reflection](#reflection)
-    can. Adding methods to another
+    cannot tell whether such a function is public; `EatMe.jl.md` marks it.
+    Adding methods to another
     module's function for another module's types is type piracy; report it.
 *   **Abstract types** often define informal interfaces (subtypes must
     implement certain functions). Record such a rule as an invariant only when
@@ -165,45 +169,6 @@ Name a third-party tool (for example Aqua.jl, JET.jl, BenchmarkTools.jl, or
 Documenter.jl) only when the project already depends on it, as shown by its
 project file, `test/Project.toml`, or `docs/Project.toml`.
 
-## Reflection
-
-Loading the package gives exact public names, owners, and methods. Ask the
-user first: it runs the package's code, can download its dependencies, and
-writes to the shared package store under `~/.julia`. It does not change the
-repository. Replace `<path>` with the package folder and `<Name>` with the
-package name, then run this with `julia --startup-file=no`:
-
-```julia
-using Pkg
-Pkg.activate(; temp = true)
-Pkg.develop(path = "<path>")
-using <Name>
-M = <Name>
-for n in names(M)
-    n === nameof(M) && continue
-    x = getfield(M, n)
-    owner = x isa Union{Function,Type} ? parentmodule(x) : M
-    nmeth = x isa Function ? length(methods(x, M)) : 0
-    println(n, "\t", Base.isexported(M, n) ? "exported" : "public", "\t",
-            owner === M ? "own" : "re-exported from $owner", "\t", nmeth, " methods")
-end
-Base.visit(Core.methodtable) do m  # Julia 1.12 and later
-    m isa Method && m.module === M || return
-    f = Base.unwrap_unionall(m.sig).parameters[1]
-    f isa Type && f !== typeof(Core.kwcall) && !(f <: Type) || return
-    startswith(string(m.name), "#") && return
-    o = parentmodule(f)
-    o === M || println(o, ".", m.name, "\t", Base.ispublic(o, m.name) ? "public" : "internal",
-                       "\t", m.file, ":", m.line)
-end
-```
-
-The first part prints each public name with its status, owner, and the
-number of methods this package defines for it. The second part prints each
-method the package adds to another module's function, and whether that
-function is public or internal in its own module. It relies on
-`Base.visit`, an internal API of Julia 1.12; skip it on older versions.
-
 ## Skill Notes
 
 ### egm-bootstrap
@@ -219,9 +184,8 @@ function is public or internal in its own module. It relies on
 *   Treat `docs/` and `benchmark/` as tooling, not components, unless the user
     asks to include them.
 *   Build the Interface, Invariants, and Side Effects sections of each
-    package from its `EatMe.jl.md` (see [EatMe](#eatme)). Without one, if the
-    user approves [Reflection](#reflection), use its output for the Interface
-    sections.
+    package from its `EatMe.jl.md` (see [Preflight](#preflight)). Without
+    one, use the text rules above and say so in the contract.
 
 ### egm-brainstorm
 
@@ -271,6 +235,5 @@ the code, search for every method of the function involved as described in
 *   Report documented exports that the module no longer exports or defines.
 *   Report methods added to other modules' functions, internal ones
     included, that the documentation omits.
-*   Use a current `EatMe.jl.md` (see [EatMe](#eatme)), or [Reflection](#reflection)
-    if the user approves it, to confirm exports and the methods added to
-    other modules' functions.
+*   Use a current `EatMe.jl.md` (see [Preflight](#preflight)) to confirm
+    exports and the methods added to other modules' functions.

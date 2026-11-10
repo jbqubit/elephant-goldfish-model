@@ -104,6 +104,8 @@ follows the EGM Spec-Driven Development process:
     [TESTING.md](TESTING.md) for running static checks (`pytest tests/unit`).
 *   **Formatting**: Format markdown files cleanly using standard formatters
     (e.g., Prettier or markdownlint).
+*   **Languages**: To add or change support for a programming language, follow
+    [Adding Support for a Language](contributing/language_extension.md).
 
 ## Contributor License Agreement (CLA)
 

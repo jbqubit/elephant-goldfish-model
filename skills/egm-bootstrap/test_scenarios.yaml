@@ -114,3 +114,18 @@ scenarios:
           - type: "forbidden_pattern"
             pattern: "(?i)not been tuned"
             message: "Documentation, data, and manifests must not trigger the unsupported source warning."
+
+  - scenario_id: "bootstrap_julia_profile"
+    description: "Verifies a Julia package is treated as supported source and verified with Pkg.test, per the Julia language profile."
+    eval_type: "deterministic"
+    system_prompt:
+      skill_file: "skills/egm-bootstrap/SKILL.md"
+    turns:
+      - user_input: "Run egm-bootstrap on Solver/. It holds Project.toml (name = \"Solver\", with a uuid), src/Solver.jl, src/utils.jl, and test/runtests.jl. Is any source unsupported, and what Verification command goes in the contract?"
+        assertions:
+          - type: "forbidden_pattern"
+            pattern: "(?i)not been tuned"
+            message: "Julia is supported, so the unsupported source warning must not appear."
+          - type: "required_pattern"
+            pattern: "Pkg\\.test\\(\\)"
+            message: "The Verification command must run the package tests with Pkg.test()."

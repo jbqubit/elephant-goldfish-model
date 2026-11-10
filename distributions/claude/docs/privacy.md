@@ -24,6 +24,10 @@ under that host's own account settings, terms, and privacy policy. Native agent
 calls use the user's host account. EGM does not control host transcript, artifact,
 backup, or model-provider retention.
 
+Every skill first runs a local file listing (`git ls-files` or `find`) to detect
+the repository's languages. A language profile can then run a local synopsis
+tool after asking the user; for Julia, EatMe.jl loads the package, which runs its
+code and can download its dependencies into a temporary package store.
 Bootstrap can run local discovery commands and an existing project-configured
 formatter. A formatter or other user-approved project command may contact a
 package registry or another service. Inspect and authorize those commands using
