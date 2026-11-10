@@ -11,8 +11,8 @@ description: >-
 
 # Detect Drift In Designs and Code
 
-When running in Codex or ChatGPT Work, first read [Codex integration](../../docs/codex.md).
-In Claude Code or Cowork, read `${CLAUDE_PLUGIN_ROOT}/docs/claude.md` first.
+Before anything else, read the [EGM preflight](../../resources/preflight.md)
+(in Claude Code or Cowork: `${CLAUDE_PLUGIN_ROOT}/resources/preflight.md`).
 
 When the user asks to detect drift across all designs or a set of READMEs, the
 goal is to identify all instances where the codebase has diverged or failed to

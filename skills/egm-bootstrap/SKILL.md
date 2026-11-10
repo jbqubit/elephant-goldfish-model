@@ -7,8 +7,8 @@ description: Bootstrap directory README.md files across a repository subtree.
 
 # EGM Peanuts and Hay Bootstrap (`egm-bootstrap`)
 
-When running in Codex or ChatGPT Work, first read [Codex integration](../../docs/codex.md).
-In Claude Code or Cowork, read `${CLAUDE_PLUGIN_ROOT}/docs/claude.md` first.
+Before anything else, read the [EGM preflight](../../resources/preflight.md)
+(in Claude Code or Cowork: `${CLAUDE_PLUGIN_ROOT}/resources/preflight.md`).
 
 ## Overview
 
@@ -138,7 +138,7 @@ this skill directory.
           `.hs`
         - Managed & Enterprise: `.java`, `.kt`, `.scala`, `.cs`, `.fs`, `.vb`
         - Scripting & Dynamic: `.py`, `.rb`, `.php`, `.lua`, `.sh`, `.bash`,
-          `.ps1`, `.psm1`, `.psd1`, `.r`, `.R`, `.ex`, `.exs`
+          `.ps1`, `.psm1`, `.psd1`, `.r`, `.R`, `.ex`, `.exs`, `.jl`
         - Web & Mobile: `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, `.swift`,
           `.m`, `.dart`
         - Data & Schemas / IDLs: `.sql`, `.proto`, `.graphql`, `.gql`,

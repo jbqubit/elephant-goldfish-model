@@ -237,12 +237,18 @@ def test_bundled_prompt_dependencies_and_harness_guides() -> None:
   assert (ROOT / "docs/codex.md").is_file()
   assert (ROOT / "docs/muse.md").is_file()
   skills = list((ROOT / "skills").glob("*/SKILL.md"))
+  preflight = ROOT / "resources/preflight.md"
   for skill in skills:
     text = skill.read_text(encoding="utf-8")
-    assert "${CLAUDE_PLUGIN_ROOT}/docs/claude.md" in text
-    targets = re.findall(r"\[Codex integration\]\(([^)]+)\)", text)
+    assert "${CLAUDE_PLUGIN_ROOT}/resources/preflight.md" in text
+    targets = re.findall(r"\[EGM preflight\]\(([^)]+)\)", text)
     assert len(targets) == 1
-    assert (skill.parent / targets[0]).resolve() == ROOT / "docs/codex.md"
+    assert (skill.parent / targets[0]).resolve() == preflight
+  text = preflight.read_text(encoding="utf-8")
+  assert "${CLAUDE_PLUGIN_ROOT}/docs/claude.md" in text
+  targets = re.findall(r"\[Codex integration\]\(([^)]+)\)", text)
+  assert len(targets) == 1
+  assert (preflight.parent / targets[0]).resolve() == ROOT / "docs/codex.md"
 
   prompts = skills + list((ROOT / "agents").glob("*.md"))
   for prompt in prompts:

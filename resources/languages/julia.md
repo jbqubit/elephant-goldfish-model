@@ -18,6 +18,31 @@ this profile and a skill disagree about Julia specifics, follow this profile.
     `Manifest-v*.toml`, and `Artifacts.toml`. Treat them as configuration,
     never as source or interface.
 
+## EatMe
+
+[EatMe.jl](https://github.com/brittonlab/EatMe.jl) loads a Julia package and
+writes `EatMe.jl.md` beside its project file: the public interface, every
+method, the methods it adds to other packages' functions, invariants, side
+effects, tests, and an internal index, with each description labeled by its
+source. When the file exists, it is the map of the package.
+
+1.  **Find the packages.** Each Julia project file (see
+    [Recognize](#recognize)) with both a `name` and a `uuid` is a package.
+    Environments such as `docs/`, `test/`, and `benchmark/` have no `uuid`;
+    skip them.
+2.  **Find EatMe.** Use the folder named by the `EATME_JL` environment
+    variable. If it is unset or has no `scripts/eatme`, tell the user that
+    EatMe is not available and continue without it.
+3.  **Run it.** For each package, follow `$EATME_JL/prompts/run.md`. It
+    checks whether `EatMe.jl.md` is current and asks the user before loading
+    the package. Do this once per package per conversation.
+4.  **Read it.** Read `EatMe.jl.md` before the package's source. Read the
+    sections before the Internal Index in full; read the Internal Index only
+    for the files you work on. Treat descriptions labeled *inferred* or
+    *unclear* as leads to check in the code, not as facts. If the file is
+    stale, say so and check its claims against the code. `EatMe.jl.md` is
+    generated output: never treat it as source, and do not edit it.
+
 ## Layout
 
 | Path | Role |
@@ -193,8 +218,10 @@ function is public or internal in its own module. It relies on
     packages that load it.
 *   Treat `docs/` and `benchmark/` as tooling, not components, unless the user
     asks to include them.
-*   If the user approves [Reflection](#reflection), use its output for the
-    Interface sections.
+*   Build the Interface, Invariants, and Side Effects sections of each
+    package from its `EatMe.jl.md` (see [EatMe](#eatme)). Without one, if the
+    user approves [Reflection](#reflection), use its output for the Interface
+    sections.
 
 ### egm-brainstorm
 
@@ -244,5 +271,6 @@ the code, search for every method of the function involved as described in
 *   Report documented exports that the module no longer exports or defines.
 *   Report methods added to other modules' functions, internal ones
     included, that the documentation omits.
-*   If the user approves [Reflection](#reflection), use it to confirm exports
-    and the methods added to other modules' functions.
+*   Use a current `EatMe.jl.md` (see [EatMe](#eatme)), or [Reflection](#reflection)
+    if the user approves it, to confirm exports and the methods added to
+    other modules' functions.

@@ -10,6 +10,7 @@ instead of maintaining separate summaries of their requirements.
 - [Implementation readiness standard](document_standards/implementation-readiness-standard.md)
 - [Re-implementation standard](document_standards/re-implementation-standard.md)
 - [Zoom-out standard](document_standards/zoom-out-standard.md)
+- [EGM preflight](preflight.md), read first by every skill
 - [Julia language profile](languages/julia.md)
 
 For installation, usage, and design rationale, see the

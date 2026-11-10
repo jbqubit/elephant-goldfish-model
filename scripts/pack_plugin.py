@@ -34,7 +34,7 @@ REQUIRED_SHARED = (
     "docs/index.md", "docs/getting_started.md", "docs/harnesses.md",
     "docs/claude.md", "docs/codex.md", "docs/faq.md", "docs/privacy.md",
     "resources/README.md", "resources/execution_instructions.md",
-    "resources/languages/julia.md",
+    "resources/languages/julia.md", "resources/preflight.md",
     "skills/egm-bootstrap/references/worker-return.schema.json",
     "skills/egm-bootstrap/references/templates.md",
     "skills/egm-draft/references/design_doc.md",

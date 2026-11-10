@@ -13,8 +13,8 @@ description: >-
 
 # Goldfish Review: Loop (Orchestration Driver)
 
-When running in Codex or ChatGPT Work, first read [Codex integration](../../docs/codex.md).
-In Claude Code or Cowork, read `${CLAUDE_PLUGIN_ROOT}/docs/claude.md` first.
+Before anything else, read the [EGM preflight](../../resources/preflight.md)
+(in Claude Code or Cowork: `${CLAUDE_PLUGIN_ROOT}/resources/preflight.md`).
 
 ## Overview
 
